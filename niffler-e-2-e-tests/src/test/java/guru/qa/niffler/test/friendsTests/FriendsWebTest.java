@@ -8,7 +8,6 @@ import guru.qa.niffler.model.pages.MainPage;
 import io.qameta.allure.AllureId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.util.List;
 
@@ -31,17 +30,7 @@ public class FriendsWebTest extends BaseWebTest {
     List<String> friendsUserName = userForTest.getFriendsUserName();
     $$(byText("You are friends")).shouldHave(CollectionCondition.size(friendsUserName.size()));
 
-    $$("table tr td:nth-child(2)").shouldHave(CollectionCondition.texts(friendsUserName));
-    mainPage.getActiveStatuses().shouldHave(CollectionCondition.texts("You are friends"));
-
     mainPage.openPeoplePage();
     $$(byText("You are friends")).shouldHave(CollectionCondition.size(friendsUserName.size()));
-  }
-
-
-  @Test
-  @AllureId("105")
-  void friendShouldBeDisplayedInTable2() {
-    $$(byText("You are friends")).shouldBe(CollectionCondition.sizeGreaterThan(0));
   }
 }

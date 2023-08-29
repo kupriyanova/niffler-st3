@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.*;
 import static guru.qa.niffler.jupiter.user.User.UserType.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,20 +21,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InvitationReceivedWebTest extends BaseWebTest {
 
+  MainPage mainPage;
+  private UserJson userWithInvitationReceived;
+
   @BeforeEach
-  void doLogin() {
-    Selenide.open("http://127.0.0.1:3000/main");
+  void doLogin(@User(userType = INVITATION_RECEIVED) UserJson user) {
+    userWithInvitationReceived = user;
+    mainPage = startApplication();
+    mainPage.logIn(userWithInvitationReceived);
+    mainPage.openFriendsPage();
   }
   @Test
   @AllureId("103")
-  void friendShouldBeDisplayedInTable(@User(userType = INVITATION_RECEIVED) UserJson userForTest) {
-    MainPage mainPage = new MainPage();
-    mainPage.logIn(userForTest).openFriendsPage();
-    assertFalse(mainPage.getListFriends().isEmpty(),
-        "У этого пользователя есть приглашения друзей, список не должен быть пуст.");
+  void invitationReceivedInTable() {
+    List<String> receivedUserName = userWithInvitationReceived.getFriendsUserName();
+    $$("[data-tooltip-id=\"submit-invitation\"] button")
+        .shouldHave(CollectionCondition.size(receivedUserName.size()));
 
     mainPage.openPeoplePage();
-    mainPage.getActiveStatuses().shouldHave(CollectionCondition.texts("You are friends"));
+    $$("[data-tooltip-id=\"submit-invitation\"] button")
+        .shouldHave(CollectionCondition.size(receivedUserName.size()));
   }
 
 }

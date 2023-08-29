@@ -9,7 +9,7 @@ public abstract class BaseWebTest {
 
   static {
     Configuration.browser = "chrome";
-    Configuration.browserVersion = "114";
+    Configuration.browserVersion = "114.0.5696.0";
     Configuration.browserSize = "1980x1024";
   }
 

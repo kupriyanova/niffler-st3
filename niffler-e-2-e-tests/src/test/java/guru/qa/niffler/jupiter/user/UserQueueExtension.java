@@ -3,6 +3,8 @@ package guru.qa.niffler.jupiter.user;
 import guru.qa.niffler.model.FriendState;
 import guru.qa.niffler.model.UserJson;
 import io.qameta.allure.AllureId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.*;
 
 import java.lang.reflect.Executable;
@@ -38,18 +40,20 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
 
   @Override
   public void beforeEach(ExtensionContext context) {
-    List<Parameter> parameters = new ArrayList<>();
     // фильтруем методы с аннотацией
-    List<Method> collect = Arrays.stream(context.getRequiredTestClass().getDeclaredMethods())
-        .filter(m -> m.isAnnotationPresent(User.class)).toList();
+    List<Method> methods = Arrays.stream(context.getRequiredTestClass().getDeclaredMethods())
+        .filter(method -> method.isAnnotationPresent(BeforeEach.class) || method.isAnnotationPresent(Test.class))
+        .toList();
+
     // собираем все параметры из всех методов
-    for(Method method : collect) {
+    List<Parameter> parameters = new ArrayList<>();
+    for(Method method : methods) {
       Parameter[] p = method.getParameters();
       if (p != null) parameters.addAll(List.of(p));
     }
 //    Parameter[] parameters = context.getRequiredTestMethod().getParameters();
 
-    List<UserJson> usersForTest = new ArrayList<>(parameters.size());
+    Map<User.UserType, UserJson> usersForTest = new HashMap<>(parameters.size());
     for (Parameter parameter : parameters) {
       if (parameter.getType().isAssignableFrom(UserJson.class)) {
         User parameterAnnotation = parameter.getAnnotation(User.class);
@@ -60,7 +64,7 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
           candidateForTest = usersQueueByType.poll();
         }
         candidateForTest.setUserType(userType);
-        usersForTest.add(candidateForTest);
+        usersForTest.put(userType, candidateForTest);
         context.getStore(NAMESPACE).put(getAllureId(context), usersForTest);
       }
     }
@@ -68,8 +72,8 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
 
   @Override
   public void afterTestExecution(ExtensionContext context) {
-    UserJson userFromTest = context.getStore(NAMESPACE).get(getAllureId(context), UserJson.class);
-    usersQueue.get(userFromTest.getUserType()).add(userFromTest);
+    Map<User.UserType, UserJson> usersFromTest = context.getStore(NAMESPACE).get(getAllureId(context), Map.class);
+    for (User.UserType userType : usersFromTest.keySet()) usersQueue.get(userType).add(usersFromTest.get(userType));
   }
 
   @Override
@@ -80,7 +84,8 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
 
   @Override
   public UserJson resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-    return extensionContext.getStore(NAMESPACE).get(getAllureId(extensionContext), UserJson.class);
+    User.UserType userType = parameterContext.getParameter().getAnnotation(User.class).userType();
+    return (UserJson) extensionContext.getStore(NAMESPACE).get(getAllureId(extensionContext), Map.class).get(userType);
   }
 
 

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 import static guru.qa.niffler.jupiter.user.User.UserType.*;
@@ -20,25 +21,22 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InvitationSentWebTest extends BaseWebTest {
+
   MainPage mainPage;
   @BeforeEach
-  void beforeTestMethod() {
+  void doLogin(@User(userType = INVITATION_SENT) UserJson userForTest) {
     mainPage = startApplication();
-    mainPage.logIn();
+    mainPage.logIn(userForTest);
     mainPage.openFriendsPage();
   }
   @Test
   @AllureId("101")
   void friendShouldBeDisplayedInTable(@User(userType = INVITATION_SENT) UserJson userForTest) {
-
-    assertFalse($$("table tr td:nth-child(2)").isEmpty(),
-        "У этого пользователя есть принятые друзья, список не должен быть пуст.");
     List<String> friendsUserName = userForTest.getFriendsUserName();
-    $$("table tr td:nth-child(2)").shouldHave(CollectionCondition.texts(friendsUserName));
-    mainPage.getActiveStatuses().shouldHave(CollectionCondition.texts("You are friends"));
+    $$(byText("You are friends")).shouldHave(CollectionCondition.size(0));
 
     mainPage.openPeoplePage();
-    mainPage.getActiveStatuses().shouldHave(CollectionCondition.texts("You are friends"));
+    $$(byText("Pending invitation")).shouldHave(CollectionCondition.size(friendsUserName.size()));
   }
 
 
