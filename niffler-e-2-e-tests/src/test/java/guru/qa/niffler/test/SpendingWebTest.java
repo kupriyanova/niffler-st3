@@ -4,8 +4,10 @@ import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.jupiter.category.Category;
 import guru.qa.niffler.jupiter.spend.Spend;
+import guru.qa.niffler.jupiter.web.BaseWebTest;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
+import io.qameta.allure.AllureId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,12 +16,7 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
 
-public class SpendingWebTest {
-
-    static {
-        Configuration.browser = "chrome";
-        Configuration.browserSize = "1980x1024";
-    }
+public class SpendingWebTest extends BaseWebTest {
 
     private final String user = "dima";
     private final String category = "Не рыбалка";
@@ -44,6 +41,7 @@ public class SpendingWebTest {
             amount = 14000.00,
             currency = CurrencyValues.RUB
     )
+    @AllureId("103")
     @Test
     void spendingShouldBeDeletedAfterDeleteAction(SpendJson createdSpend) {
         $(".spendings__content tbody")
