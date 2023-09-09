@@ -3,8 +3,8 @@ package guru.qa.niffler.jupiter.user;
 import guru.qa.niffler.model.FriendState;
 import guru.qa.niffler.model.UserJson;
 import io.qameta.allure.AllureId;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.*;
 
 import java.lang.reflect.Executable;
@@ -13,8 +13,6 @@ import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static guru.qa.niffler.model.FriendState.*;
 
@@ -40,20 +38,22 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
 
   @Override
   public void beforeEach(ExtensionContext context) {
-    // фильтруем методы с аннотацией
-    List<Method> methods = Arrays.stream(context.getRequiredTestClass().getDeclaredMethods())
-        .filter(method -> method.isAnnotationPresent(BeforeEach.class) || method.isAnnotationPresent(Test.class))
-        .toList();
+    // фильтруем методы с аннотацией BeforeEach
+    Optional<Method> beforeEach = Arrays.stream(context.getRequiredTestClass().getDeclaredMethods())
+        .filter(method -> method.isAnnotationPresent(BeforeEach.class)).findFirst();
 
-    // собираем все параметры из всех методов
-    List<Parameter> parameters = new ArrayList<>();
-    for(Method method : methods) {
-      Parameter[] p = method.getParameters();
-      if (p != null) parameters.addAll(List.of(p));
-    }
-//    Parameter[] parameters = context.getRequiredTestMethod().getParameters();
+    // получаем параметры из beforeEach
+    Parameter[] beforeEachParams = beforeEach.map(Executable::getParameters).orElse(null);
+    // получаем параметры из теста
+    Parameter[] testParams = context.getRequiredTestMethod().getParameters();
+    Parameter[] parameters;
+    // собираем полученные параметры в один массив
+    if (beforeEachParams != null && testParams != null)
+      parameters = ArrayUtils.addAll(beforeEachParams, testParams);
+    else if (beforeEachParams == null) parameters = testParams;
+    else parameters = beforeEachParams;
 
-    Map<User.UserType, UserJson> usersForTest = new HashMap<>(parameters.size());
+    Map<User.UserType, UserJson> usersForTest = new HashMap<>(parameters.length);
     for (Parameter parameter : parameters) {
       if (parameter.getType().isAssignableFrom(UserJson.class)) {
         User parameterAnnotation = parameter.getAnnotation(User.class);
@@ -66,6 +66,7 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
         candidateForTest.setUserType(userType);
         usersForTest.put(userType, candidateForTest);
         context.getStore(NAMESPACE).put(getAllureId(context), usersForTest);
+        break;
       }
     }
   }
@@ -98,11 +99,10 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
   }
 
   private static UserJson bindUser(String username, String password, FriendState friendState, List<String> friendsUserName) {
-    UserJson user = new UserJson()
+    return new UserJson()
         .setUsername(username)
         .setPassword(password)
         .setFriendState(friendState)
         .setFriendsUserName(friendsUserName);
-    return user;
   }
 }
