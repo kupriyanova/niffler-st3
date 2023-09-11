@@ -6,9 +6,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.UUID;
 
-public interface AuthUserDAO {
+public interface UserDataUserDAO {
 
-  PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-  int createUser(UserEntity user);
-  void deleteUserById(UUID userId);
+  int createUserInUserData(UserEntity user);
+  void deleteUserByIdInUserData(UUID userId);
 }

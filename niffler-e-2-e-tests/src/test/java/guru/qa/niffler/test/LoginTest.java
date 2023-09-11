@@ -1,6 +1,7 @@
 package guru.qa.niffler.test;
 
 import guru.qa.niffler.db.dao.AuthUserDAO;
+import guru.qa.niffler.db.dao.UserDataUserDAO;
 import guru.qa.niffler.db.model.Authority;
 import guru.qa.niffler.db.model.AuthorityEntity;
 import guru.qa.niffler.db.model.UserEntity;
@@ -20,8 +21,12 @@ public class LoginTest extends BaseWebTest {
 
   @Dao
   private AuthUserDAO authUserDAO;
+  @Dao
+  private UserDataUserDAO userDataUserDAO;
   private UserEntity user;
   MainPage mainPage;
+
+
   @BeforeEach
   void createUser() {
     user = new UserEntity()
@@ -35,6 +40,7 @@ public class LoginTest extends BaseWebTest {
             .map(a -> new AuthorityEntity().setAuthority(a)).toList());
     authUserDAO.createUser(user);
   }
+
   @AfterEach
   void deleteUser() {
     authUserDAO.deleteUserById(user.getId());

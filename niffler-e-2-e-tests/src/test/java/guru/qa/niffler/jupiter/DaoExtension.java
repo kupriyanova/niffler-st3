@@ -1,9 +1,6 @@
 package guru.qa.niffler.jupiter;
 
-import guru.qa.niffler.db.dao.AuthUserDAO;
-import guru.qa.niffler.db.dao.AuthUserDAOHibernate;
-import guru.qa.niffler.db.dao.AuthUserDAOJdbc;
-import guru.qa.niffler.db.dao.AuthUserDAOSpringJdbc;
+import guru.qa.niffler.db.dao.*;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 
@@ -13,7 +10,8 @@ public class DaoExtension implements TestInstancePostProcessor {
   @Override
   public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
     for (Field field : testInstance.getClass().getDeclaredFields()) {
-      if (field.getType().isAssignableFrom(AuthUserDAO.class)
+      if ((field.getType().isAssignableFrom(AuthUserDAO.class)
+          || field.getType().isAssignableFrom(UserDataUserDAO.class))
           && field.isAnnotationPresent(Dao.class)) {
         field.setAccessible(true);
         AuthUserDAO dao;
