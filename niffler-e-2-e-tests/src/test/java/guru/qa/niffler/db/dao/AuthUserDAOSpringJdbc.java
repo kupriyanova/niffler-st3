@@ -1,17 +1,26 @@
 package guru.qa.niffler.db.dao;
 
-import guru.qa.niffler.db.model.UserEntity;
+import guru.qa.niffler.db.model.AuthUserEntity;
 
 import java.util.UUID;
 
 public class AuthUserDAOSpringJdbc implements AuthUserDAO {
   @Override
-  public int createUser(UserEntity user) {
-    return 0;
+  public void createUser(AuthUserEntity user) {
   }
 
   @Override
-  public void deleteUserById(UUID userId) {
+  public AuthUserEntity updateUser(AuthUserEntity user) {
+    return null;
+  }
 
+  @Override
+  public void deleteUser(UUID userId) {
+
+  }
+
+  @Override
+  public AuthUserEntity getUserById(UUID userId) {
+    return null;
   }
 }

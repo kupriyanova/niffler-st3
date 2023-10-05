@@ -1,8 +1,8 @@
 package guru.qa.niffler.jupiter.user;
 
+import guru.qa.niffler.jupiter.ExtensionsHelper;
 import guru.qa.niffler.model.FriendState;
 import guru.qa.niffler.model.UserJson;
-import io.qameta.allure.AllureId;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.*;
@@ -65,7 +65,7 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
         }
         candidateForTest.setUserType(userType);
         usersForTest.put(userType, candidateForTest);
-        context.getStore(NAMESPACE).put(getAllureId(context), usersForTest);
+        context.getStore(NAMESPACE).put(new ExtensionsHelper().getAllureId(context), usersForTest);
         break;
       }
     }
@@ -73,7 +73,8 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
 
   @Override
   public void afterTestExecution(ExtensionContext context) {
-    Map<User.UserType, UserJson> usersFromTest = context.getStore(NAMESPACE).get(getAllureId(context), Map.class);
+    Map<User.UserType, UserJson> usersFromTest = context.getStore(NAMESPACE)
+        .get(new ExtensionsHelper().getAllureId(context), Map.class);
     for (User.UserType userType : usersFromTest.keySet()) usersQueue.get(userType).add(usersFromTest.get(userType));
   }
 
@@ -86,17 +87,10 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
   @Override
   public UserJson resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
     User.UserType userType = parameterContext.getParameter().getAnnotation(User.class).userType();
-    return (UserJson) extensionContext.getStore(NAMESPACE).get(getAllureId(extensionContext), Map.class).get(userType);
+    return (UserJson) extensionContext.getStore(NAMESPACE)
+        .get(new ExtensionsHelper().getAllureId(extensionContext), Map.class).get(userType);
   }
 
-
-  private String getAllureId(ExtensionContext context) {
-    AllureId allureId = context.getRequiredTestMethod().getAnnotation(AllureId.class);
-    if (allureId == null) {
-      throw new IllegalStateException("Annotation @AllureId must be present!");
-    }
-    return allureId.value();
-  }
 
   private static UserJson bindUser(String username, String password, FriendState friendState, List<String> friendsUserName) {
     return new UserJson()
