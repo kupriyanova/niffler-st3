@@ -1,6 +1,7 @@
 package guru.qa.niffler.model.pages;
 
 import com.codeborne.selenide.ElementsCollection;
+import guru.qa.niffler.db.model.AuthUserEntity;
 import guru.qa.niffler.model.UserJson;
 
 import static com.codeborne.selenide.Selenide.$;
@@ -12,6 +13,20 @@ public class MainPage {
     $("a[href*='redirect']").click();
     $("input[name='username']").setValue(user.getUsername());
     $("input[name='password']").setValue(user.getPassword());
+    $("button[type='submit']").click();
+    return this;
+  }
+  public MainPage logIn(AuthUserEntity user) {
+    $("a[href*='redirect']").click();
+    $("input[name='username']").setValue(user.getUsername());
+    $("input[name='password']").setValue(user.getPassword());
+    $("button[type='submit']").click();
+    return this;
+  }
+  public MainPage logIn(String login, String password) {
+    $("a[href*='redirect']").click();
+    $("input[name='username']").setValue(login);
+    $("input[name='password']").setValue(password);
     $("button[type='submit']").click();
     return this;
   }
