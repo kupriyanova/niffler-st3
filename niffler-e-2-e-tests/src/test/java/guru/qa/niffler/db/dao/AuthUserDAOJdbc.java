@@ -20,7 +20,7 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
   private static final DataSource userDataDs = DataSourceProvider.INSTANCE.getDataSource(ServiceDB.USERDATA);
 
   @Override
-  public void createUser(AuthUserEntity user) {
+  public void createUser(UserEntity user) {
     try(Connection conn = authDs.getConnection()) {
       conn.setAutoCommit(false);
       try (PreparedStatement userPs = conn.prepareStatement(
@@ -56,6 +56,21 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
       } catch (SQLException e) {
         conn.rollback();
         conn.setAutoCommit(true);
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void createUserInUserData(UserEntity user) {
+    try(Connection conn = userDataDs.getConnection()) {
+      try (PreparedStatement userPs = conn.prepareStatement(
+          "INSERT INTO users (username, currency) " +
+              "VALUES (?,?)", PreparedStatement.RETURN_GENERATED_KEYS))
+      {
+        userPs.setString(1, user.getUsername());
+        userPs.setString(2, CurrencyValues.RUB.name());
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -144,6 +159,10 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
   }
 
   @Override
+  public void deleteUser(String userName) {
+  }
+
+  @Override
   public AuthUserEntity getUserById(UUID userId) {
     AuthUserEntity user = new AuthUserEntity();
     try (Connection conn = authDs.getConnection()) {
@@ -193,22 +212,7 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
 
 
   @Override
-  public void createUserInUserData(UserDataUserEntity user) {
-    try(Connection conn = userDataDs.getConnection()) {
-      try (PreparedStatement userPs = conn.prepareStatement(
-          "INSERT INTO users (username, currency) " +
-              "VALUES (?,?)", PreparedStatement.RETURN_GENERATED_KEYS))
-      {
-        userPs.setString(1, user.getUsername());
-        userPs.setString(2, CurrencyValues.RUB.name());
-      }
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public UserDataUserEntity updateUserInUserData(UserDataUserEntity user) {
+  public UserEntity updateUserInUserData(UserEntity user) {
     try (Connection conn = userDataDs.getConnection()) {
       try (PreparedStatement usersPs = conn.prepareStatement(
           "UPDATE  users " +
@@ -217,10 +221,10 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
 
         usersPs.setObject(1, user.getId());
         usersPs.setString(2, user.getUsername());
-        usersPs.setObject(3, user.getCurrency().name());
-        usersPs.setString(4, user.getFirstname());
-        usersPs.setString(5, user.getSurname());
-        usersPs.setObject(6, user.getPhoto());
+//        usersPs.setObject(3, user.getCurrency().name());
+//        usersPs.setString(4, user.getFirstname());
+//        usersPs.setString(5, user.getSurname());
+//        usersPs.setObject(6, user.getPhoto());
         usersPs.setObject(7, user.getId());
 
         usersPs.executeUpdate();
@@ -248,8 +252,8 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
   }
 
   @Override
-  public UserDataUserEntity getUserByIdInUserData(UUID userId) {
-    UserDataUserEntity user = new UserDataUserEntity();
+  public UserEntity getUserByIdInUserData(UUID userId) {
+    UserEntity user = new UserEntity();
     try (Connection conn = userDataDs.getConnection()) {
       try (PreparedStatement usersPs = conn.prepareStatement(
           "SELECT * FROM users " +
@@ -263,11 +267,11 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
         while (rs.next()) {
           user.setId(rs.getObject("id", UUID.class));
           user.setUsername(rs.getString("username"));
-          user.setCurrency(CurrencyValues.valueOf(rs.getString("currency")));
-          user.setFirstname(rs.getString("firstname"));
-          user.setSurname(rs.getString("surname"));
-          String photo = rs.getString("photo");
-          user.setPhoto(photo != null ? photo.getBytes() : null);
+//          user.setCurrency(CurrencyValues.valueOf(rs.getString("currency")));
+//          user.setFirstname(rs.getString("firstname"));
+//          user.setSurname(rs.getString("surname"));
+//          String photo = rs.getString("photo");
+//          user.setPhoto(photo != null ? photo.getBytes() : null);
         }
       }
     } catch (SQLException e) {

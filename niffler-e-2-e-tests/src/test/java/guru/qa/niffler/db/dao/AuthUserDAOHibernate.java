@@ -1,12 +1,13 @@
 package guru.qa.niffler.db.dao;
 
 import guru.qa.niffler.db.model.AuthUserEntity;
+import guru.qa.niffler.db.model.UserEntity;
 
 import java.util.UUID;
 
 public class AuthUserDAOHibernate implements AuthUserDAO {
   @Override
-  public void createUser(AuthUserEntity user) {
+  public void createUser(UserEntity user) {
   }
 
   @Override
@@ -17,6 +18,9 @@ public class AuthUserDAOHibernate implements AuthUserDAO {
   @Override
   public void deleteUser(UUID userId) {
 
+  }
+  @Override
+  public void deleteUser(String userName) {
   }
 
   @Override
